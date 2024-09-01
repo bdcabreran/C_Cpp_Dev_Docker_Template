@@ -20,8 +20,6 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-
-
 # Set the locale to avoid any locale issues during the build
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
@@ -39,10 +37,6 @@ WORKDIR /workspace
 
 # Switch to your non-root user to avoid using root for builds
 USER devuser
-
-# Global Git configuration settings
-RUN git config --global user.email "bdcabreran@unal.edu.co" && \
-    git config --global user.name "bdcabreran"
 
 # Default command to keep the container running
 CMD ["/bin/bash"]
