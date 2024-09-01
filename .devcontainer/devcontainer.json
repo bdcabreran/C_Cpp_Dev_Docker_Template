@@ -1,0 +1,57 @@
+{
+    // Name of your development environment
+    "name": "C/C++ Development Environment",
+
+    "build": {
+        "dockerfile": "../Dockerfile", // Path to Dockerfile relative to the .devcontainer folder
+        "context": ".." // Docker build context, usually the project root
+    },
+    
+    // Customizations for VSCode settings and recommended extensions
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "terminal.integrated.shell.linux": "/bin/bash"
+            },
+        "extensions": [
+            "aaron-bond.better-comments", // Create more human-friendly comments in your code
+            "ms-vscode.cpptools", // C++ tools, useful for any C/C++ development
+            "eamodio.gitlens", // Enhanced Git support
+            "pkief.vscode-material-icon-theme", // vscode-icons, provides rich icons set for Visual Studio Code
+            "mhutchie.git-graph", // Visualize your Git repositories in graph format
+            "streetsidesoftware.code-spell-checker", // Spell check your code to avoid typos
+            "CoenraadS.bracket-pair-colorizer-2", // Colorize matching brackets, enhances code readability
+            "ms-vscode.cmake-tools", // Helpful for projects that may use CMake as part of their build process
+            "twxs.cmake", // CMake language support for Visual Studio Code
+            "ms-azuretools.vscode-docker", // Docker support for easy management of containers and images
+            "ms-vscode.cpptools-extension-pack", 
+            "ms-vscode.makefile-tools",
+            "seunlanlege.action-buttons" // This is the extension for action buttons
+        ]
+        }
+    },
+
+    // List of ports to forward from the container to the host
+    "forwardPorts": [
+        8080 // Example port, adjust as necessary for your application
+    ],
+
+    // Command to run after creating the container
+    "postCreateCommand": "echo 'Environment ready for C/C++ Project Development!'",
+
+    // Specifies the user that VSCode should use inside the container
+    // Setting remoteUser to "root" allows you to perform any operation inside the container without permission issues. However, for security reasons and to mimic a production-like environment, consider using a non-root user for daily development work.
+    "remoteUser": "devuser", 
+
+    // Example devcontainer.json snippet
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+    "workspaceFolder": "/workspace"
+
+    // Add runArgs to include device mappings
+    // Use it only if you are sure these devices exists otherwise it will generate an error 
+    // "runArgs": [
+    //     "--device=/dev/ttyUSB0:/dev/ttyUSB0",
+    //     "--device=/dev/sda:/dev/sda"
+    // ]
+}

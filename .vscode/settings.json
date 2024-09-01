@@ -1,0 +1,37 @@
+
+{
+  "actionButtons": {
+    "defaultColor": "#FFFFFF",
+    "loadNpmCommands": false,
+    "commands": [
+      {
+        "name": "Build",
+        "color": "yellow",
+        "terminalName": "Project Terminal",
+        "ignoreClear": true,
+        "command": "make --no-print-directory -C app/ BUILD_TYPE=dev BUILD_LOCAL=true"
+      },
+      {
+        "name": "Rebuild",
+        "color": "yellow",
+        "terminalName": "Project Terminal",
+        "ignoreClear": true,
+        "command": "make --no-print-directory -C app/ rebuild BUILD_TYPE=dev BUILD_LOCAL=true"
+      },
+      {
+        "name": "Clean",
+        "color": "yellow",
+        "terminalName": "Project Terminal",
+        "ignoreClear": true,
+        "command": "make --no-print-directory -C app/ clean BUILD_TYPE=dev BUILD_LOCAL=true"
+      },
+      {
+        "name": "Run",
+        "color": "green",
+        "terminalName": "Project Terminal",
+        "ignoreClear": true,
+        "command": "make --no-print-directory -C app/ run BUILD_TYPE=dev BUILD_LOCAL=true"
+      },
+    ]
+  }
+}
