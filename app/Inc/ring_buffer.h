@@ -28,8 +28,10 @@ typedef enum
     RING_BUFFER_NOT_ENOUGH_SPACE, /**< Not enough space in buffer */
 
     // Error codes
-    RING_BUFFER_ERROR_NULL_PTR, /**< Null pointer error */
-    RING_BUFFER_ERROR_NO_DATA,  /**< No data available */
+    RING_BUFFER_ERROR_NULL_PTR,          /**< Null pointer error */
+    RING_BUFFER_ERROR_NO_DATA,           /**< No data available */
+    RING_BUFFER_ERROR_INSUFFICIENT_DATA, // Insufficient data available for the requested operation
+
 } ring_buffer_status_t;
 
 /**

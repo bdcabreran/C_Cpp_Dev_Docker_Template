@@ -1,5 +1,23 @@
 
 {
+  "C_Cpp.clang_format_style": "file",
+  "C_Cpp.clang_format_fallbackStyle": "LLVM",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "xaver.clang-format",
+  "[c]": {
+      "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "[cpp]": {
+      "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "clang-format.executable": "/usr/bin/clang-format",
+  "files.associations": {
+      "p_type.h": "c",
+      "common_type.h": "c",
+      "stdbool.h": "c",
+      "ring_buffer.h": "c"
+  }, 
+
   "actionButtons": {
     "defaultColor": "#FFFFFF",
     "loadNpmCommands": false,

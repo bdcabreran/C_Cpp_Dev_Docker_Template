@@ -46,21 +46,45 @@ static inline void retreat_tail_pointer(ring_buffer_handle_t handle)
     handle->tail = (handle->tail + 1) % handle->length;
 }
 
+static inline size_t ring_buffer_calculate_available_data(ring_buffer_handle_t handle)
+{
+    if (handle->full)
+    {
+        return handle->length; // Buffer is full
+    }
+    else if (handle->head >= handle->tail)
+    {
+        return handle->head - handle->tail; // Normal case
+    }
+    else
+    {
+        return handle->length + handle->head - handle->tail; // Wrap-around case
+    }
+}
+
+static inline uint8_t ring_buffer_is_empty_inline(ring_buffer_handle_t handle)
+{
+    return (!handle->full && (handle->tail == handle->head));
+}
+
+static inline uint8_t ring_buffer_is_full_inline(ring_buffer_handle_t handle)
+{
+    return handle->full;
+}
+
 /* Public Functions ----------------------------------------------------------*/
 
 ring_buffer_status_t ring_buffer_is_empty(ring_buffer_handle_t handle, uint8_t* is_empty)
 {
     if (!handle || !is_empty) return RING_BUFFER_ERROR_NULL_PTR;
-
-    *is_empty = (!handle->full && (handle->tail == handle->head));
+    *is_empty = ring_buffer_is_empty_inline(handle);
     return RING_BUFFER_OK;
 }
 
 ring_buffer_status_t ring_buffer_is_full(ring_buffer_handle_t handle, uint8_t* is_full)
 {
     if (!handle || !is_full) return RING_BUFFER_ERROR_NULL_PTR;
-
-    *is_full = handle->full;
+    *is_full = ring_buffer_is_full_inline(handle);
     return RING_BUFFER_OK;
 }
 
@@ -107,23 +131,12 @@ ring_buffer_status_t ring_buffer_reset(ring_buffer_handle_t handle)
 
 ring_buffer_status_t ring_buffer_get_data_length(ring_buffer_handle_t handle, size_t* length)
 {
+    // Check for null pointers to ensure safety before proceeding.
     if (!handle || !length) return RING_BUFFER_ERROR_NULL_PTR;
 
-    size_t size = handle->length;
+    // Use the inline function to calculate the available data.
+    *length = ring_buffer_calculate_available_data(handle);
 
-    if (!handle->full)
-    {
-        if (handle->head >= handle->tail)
-        {
-            size = handle->head - handle->tail;
-        }
-        else
-        {
-            size = handle->length + handle->head - handle->tail;
-        }
-    }
-
-    *length = size;
     return RING_BUFFER_OK;
 }
 
@@ -138,10 +151,7 @@ ring_buffer_status_t ring_buffer_get_capacity(ring_buffer_handle_t handle, size_
 ring_buffer_status_t ring_buffer_get_free_space(ring_buffer_handle_t handle, size_t* free_space)
 {
     if (!handle || !free_space) return RING_BUFFER_ERROR_NULL_PTR;
-
-    size_t data_length;
-    ring_buffer_get_data_length(handle, &data_length);
-    *free_space = handle->length - data_length;
+    *free_space = handle->length - ring_buffer_calculate_available_data(handle);
     return RING_BUFFER_OK;
 }
 
@@ -149,8 +159,8 @@ ring_buffer_status_t ring_buffer_put_byte(ring_buffer_handle_t handle, uint8_t d
 {
     if (!handle || !handle->buffer) return RING_BUFFER_ERROR_NULL_PTR;
 
-    size_t free_space;
-    ring_buffer_get_free_space(handle, &free_space);
+    size_t free_space = handle->length - ring_buffer_calculate_available_data(handle);
+
     if (free_space == 0)
     {
         return RING_BUFFER_NOT_ENOUGH_SPACE;
@@ -166,13 +176,7 @@ ring_buffer_status_t ring_buffer_get_byte(ring_buffer_handle_t handle, uint8_t* 
 {
     if (!handle || !data || !handle->buffer) return RING_BUFFER_ERROR_NULL_PTR;
 
-    uint8_t              is_empty;
-    ring_buffer_status_t status = ring_buffer_is_empty(handle, &is_empty);
-    if (status != RING_BUFFER_OK)
-    {
-        return status; // Return error from ring_buffer_is_empty if it fails
-    }
-
+    uint8_t is_empty = ring_buffer_is_empty_inline(handle);
     if (is_empty)
     {
         return RING_BUFFER_ERROR_NO_DATA;
@@ -188,8 +192,7 @@ ring_buffer_status_t ring_buffer_write(ring_buffer_handle_t handle, uint8_t* dat
 {
     if (!handle || !data || !handle->buffer) return RING_BUFFER_ERROR_NULL_PTR;
 
-    size_t free_space;
-    ring_buffer_get_free_space(handle, &free_space);
+    size_t free_space = handle->length - ring_buffer_calculate_available_data(handle);
     if (free_space < length)
     {
         return RING_BUFFER_NOT_ENOUGH_SPACE;
@@ -207,20 +210,16 @@ ring_buffer_status_t ring_buffer_write(ring_buffer_handle_t handle, uint8_t* dat
 ring_buffer_status_t ring_buffer_read(ring_buffer_handle_t handle, uint8_t* data, size_t length)
 {
     if (!handle || !data || !handle->buffer) return RING_BUFFER_ERROR_NULL_PTR;
-    uint8_t is_empty;
+
+    size_t available_data = ring_buffer_calculate_available_data(handle);
+
+    if (available_data < length)
+    {
+        return RING_BUFFER_ERROR_INSUFFICIENT_DATA;
+    }
+
     for (size_t i = 0; i < length; i++)
     {
-        ring_buffer_status_t status = ring_buffer_is_empty(handle, &is_empty);
-        if (status != RING_BUFFER_OK)
-        {
-            return status; // Return error from ring_buffer_is_empty if it fails
-        }
-    
-        if (is_empty)
-        {
-            return RING_BUFFER_ERROR_NO_DATA;
-        }
-    
         data[i] = handle->buffer[handle->tail];
         retreat_tail_pointer(handle);
     }
@@ -232,12 +231,11 @@ ring_buffer_status_t ring_buffer_peek(ring_buffer_handle_t handle, uint8_t* data
 {
     if (!handle || !data || !handle->buffer) return RING_BUFFER_ERROR_NULL_PTR;
 
-    size_t data_length;
-    ring_buffer_get_data_length(handle, &data_length);
+    size_t available_data = ring_buffer_calculate_available_data(handle);
 
-    if (length > data_length)
+    if (available_data < length)
     {
-        return RING_BUFFER_ERROR_NULL_PTR;
+        return RING_BUFFER_ERROR_INSUFFICIENT_DATA;
     }
 
     size_t temp_tail = handle->tail;
