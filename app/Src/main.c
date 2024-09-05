@@ -44,7 +44,7 @@ int main()
     printf("Available Data %ld bytes\r\n", available_bytes);
 
     // Peek data without removing it
-    uint8_t peeked_data[4];
+    uint8_t peeked_data[3];
     status = ring_buffer_peek(ring_buffer, peeked_data, sizeof(peeked_data));
     if (status == RING_BUFFER_OK)
     {
@@ -61,7 +61,7 @@ int main()
     }
 
     // Read data
-    uint8_t read_data[5];
+    uint8_t read_data[3];
     status = ring_buffer_read(ring_buffer, read_data, sizeof(read_data));
     if (status == RING_BUFFER_OK)
     {
@@ -103,6 +103,24 @@ int main()
     else
     {
         printf("Byte read 0x%x.\n", byte);
+    }
+
+
+    for (int i = 0; i < BUFFER_SIZE; i++)
+    {
+        status = ring_buffer_put_byte(ring_buffer, i);
+        if (status != RING_BUFFER_OK)
+        {
+            printf("Failed to write byte. Status: %d\n", status);
+        }
+    }
+    ring_buffer_get_data_length(ring_buffer, &available_bytes);
+    printf("Ring buffer is full %ld\n", available_bytes);
+
+    status = ring_buffer_put_byte(ring_buffer, 0xAA);
+    if (status != RING_BUFFER_OK)
+    {
+        printf("Failed to write byte. Status: %d\n", status);
     }
 
     // Free the ring buffer

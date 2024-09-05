@@ -159,9 +159,9 @@ ring_buffer_status_t ring_buffer_put_byte(ring_buffer_handle_t handle, uint8_t d
 {
     if (!handle || !handle->buffer) return RING_BUFFER_ERROR_NULL_PTR;
 
-    size_t free_space = handle->length - ring_buffer_calculate_available_data(handle);
+    uint8_t is_full = ring_buffer_is_full_inline(handle);
 
-    if (free_space == 0)
+    if (is_full)
     {
         return RING_BUFFER_NOT_ENOUGH_SPACE;
     }
